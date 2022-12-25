@@ -3,21 +3,22 @@ import { ethers } from "hardhat";
 const main = async () => {
   const [owner, randomPerson] = await ethers.getSigners();
   const domainContractFactory = await ethers.getContractFactory("Domains");
-  const domainContract = await domainContractFactory.deploy();
+  const domainContract = await domainContractFactory.deploy("based");
   await domainContract.deployed();
   console.log("Contract deployed to:", domainContract.address);
   console.log("Contract deployed by:", owner.address);
+  console.log("Contract's top level domain:", domainContract.tld);
 
-  let txn = await domainContract.register("doom");
+  let txn = await domainContract.register("mortal", {
+    value: ethers.utils.parseEther("0.1"),
+  });
   await txn.wait();
 
-  const domainOwner = await domainContract.getAddress("doom");
-  console.log("Owner of domain:", domainOwner);
+  const address = await domainContract.getAddress("mortal");
+  console.log("Owner of domain mortal:", address);
 
-  txn = await domainContract
-    .connect(randomPerson)
-    .setRecord("doom", "Haha my domain now!");
-  await txn.wait();
+  const balance = await ethers.provider.getBalance(domainContract.address);
+  console.log("Contract balance:", ethers.utils.formatEther(balance));
 };
 
 const runMain = async () => {
